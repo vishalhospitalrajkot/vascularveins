@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Vascular Vein Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Subtle Medical Blue/Green Accents -->
+    <!-- Application Structure Plan: The application is now a single, continuously scrolling page. All content from 'Welcome & Anatomy', 'Vein Conditions', 'Diagnostic Methods', 'Treatment Journey', 'Recent Advances', and 'Proactive Vein Health' sections is rendered directly. Navigation links function as anchor links, smoothly scrolling the user to the respective content block. This structure eliminates the need for tabbed interfaces to hide/show main sections, providing an immediate overview of all available information and a linear reading path, while retaining interactive elements (e.g., condition tabs, timeline, charts) *within* each major content block. This is chosen to ensure all information is immediately discoverable. -->
+    <!-- Visualization & Content Choices: Report Info -> Goal -> Viz/Presentation Method -> Interaction -> Justification -> Library/Method. 1. Basic Anatomy: Goal is to inform foundational knowledge. Method is a detailed text block. Interaction is scrolling. Justification is direct information conveyance. 2. Common Vein Conditions: Goal is to compare and detail pathologies. Method is a tabbed layout with extensive text descriptions, symptoms, and risk factors (tabs retained for *internal* section organization). Interaction is clicking tabs. Justification is to allow focused comparison and deep dive into each condition. A Chart.js bar chart compares common risk factors across conditions for quick insights. 3. Historical Understanding & Treatments: Goal is to show change over time and detail current therapies. Method is a horizontal clickable timeline for historical milestones and detailed text blocks for current treatments. Interaction is clicking timeline points for details and scrolling for treatment modalities. Justification is to make historical progress engaging and to categorize various treatment options clearly. A Chart.js bar chart illustrates efficacy improvements. 4. Diagnostic Methods & Recent Advances: Goal is to inform about techniques and innovations. Method is a grid of interactive cards with textual descriptions. Interaction is simple viewing. Justification is to present complex topics in a scannable, visually appealing format. 5. Preventative Strategies: Goal is to inform and encourage action. Method is a grid of interactive cards with icons and actionable advice. Interaction is viewing. Justification is to provide clear, actionable health tips. CONFIRMING: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #0d9488;
+            border-bottom-color: #0d9488;
+        }
+        /* No display: none for content-section in single-page version */
+        .content-section {
+            animation: fadeIn 0.5s ease-in-out;
+            display: block; /* All sections are visible */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 40vh;
+        }
+        .timeline-item {
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+            flex-shrink: 0;
+            width: 150px;
+            text-align: center;
+        }
+        .timeline-item:hover {
+            transform: scale(1.05);
+        }
+        .timeline-content {
+            display: none;
+            position: absolute;
+            top: calc(100% + 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            min-width: 250px;
+            max-width: 90%;
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            z-index: 20;
+        }
+        .timeline-item.active .timeline-content {
+            display: block;
+        }
+        .card-item {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .styled-list li:before {
+            content: '•';
+            color: #0d9488;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+        .styled-list li {
+            padding-left: 1em;
+            text-indent: -1em;
+        }
+        /* Style for Google Translate Element */
+        #google_translate_element .goog-te-gadget-simple {
+            border: 1px solid #d1d5db !important; /* Tailwind gray-300 */
+            border-radius: 0.5rem !important; /* Tailwind rounded-lg */
+            background-color: #ffffff !important;
+            padding: 0.5rem 0.75rem !important;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            font-family: 'Inter', sans-serif; /* Ensure font consistency */
+        }
+        #google_translate_element .goog-te-combo {
+            font-size: 0.875rem; /* Tailwind text-sm */
+            line-height: 1.25rem;
+            color: #4A4A4A;
+            border: none !important;
+            background-color: transparent !important;
+            appearance: none; /* Hide default arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding-right: 1.5rem; /* Space for custom arrow if added */
+        }
+        /* Hide default Google Translate banner */
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        }
+        body {
+            top: 0 !important;
+        }
+        /* Internal tab navigation for conditions section */
+        .condition-tab-content {
+            display: none;
+        }
+        .condition-tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div class="w-full py-2 px-6 flex justify-end">
+            <div id="google_translate_element" class="flex-shrink-0"></div>
+        </div>
+        <nav class="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-2xl font-bold text-teal-800 mb-4 md:mb-0">Vascular Vein Health</h1>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#welcome" class="nav-link active text-lg font-semibold pb-1">Welcome</a>
+                <a href="#conditions" class="nav-link text-lg font-semibold pb-1">Conditions</a>
+                <a href="#diagnostics" class="nav-link text-lg font-semibold pb-1">Diagnostics</a>
+                <a href="#treatments" class="nav-link text-lg font-semibold pb-1">Treatments</a>
+                <a href="#advances" class="nav-link text-lg font-semibold pb-1">Advances</a>
+                <a href="#prevention" class="nav-link text-lg font-semibold pb-1">Prevention</a>
+            </div>
+            <div class="md:hidden mt-4">
+                <button id="mobile-menu-button" class="text-gray-700 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4 space-y-2">
+            <a href="#welcome" class="nav-link-mobile block text-lg font-semibold py-1">Welcome</a>
+            <a href="#conditions" class="nav-link-mobile block text-lg font-semibold py-1">Conditions</a>
+            <a href="#diagnostics" class="nav-link-mobile block text-lg font-semibold py-1">Diagnostics</a>
+            <a href="#treatments" class="nav-link-mobile block text-lg font-semibold py-1">Treatments</a>
+            <a href="#advances" class="nav-link-mobile block text-lg font-semibold py-1">Advances</a>
+            <a href="#prevention" class="nav-link-mobile block text-lg font-semibold py-1">Prevention</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        
+        <section id="welcome" class="content-section min-h-screen py-16 flex flex-col justify-center">
+            <div class="w-full text-center mb-12">
+                <h2 class="text-4xl md:text-6xl font-bold text-teal-900 mb-4">An Interactive Journey Through Vein Health</h2>
+                <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600 mb-8">
+                    Welcome to your comprehensive guide to the vascular venous system. This application translates a detailed medical report into an accessible, interactive experience, covering foundational anatomy to the latest advances. Use the navigation above to journey through each section and explore key information on vein anatomy, common conditions, diagnostic methods, treatment evolutions, recent innovations, and preventive care.
+                </p>
+                <a href="#conditions" class="nav-link-action bg-teal-600 text-white font-bold py-3 px-8 rounded-full hover:bg-teal-700 transition-colors text-lg shadow-lg">
+                    Start Exploring Conditions
+                </a>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg mt-12">
+                <h3 class="text-3xl font-bold text-teal-800 mb-4 text-center">Basic Anatomy and Physiology of Veins</h3>
+                <p class="text-gray-700 leading-relaxed mb-4">
+                    Veins form the low-pressure, high-capacitance part of the circulatory system that returns blood to the heart. They carry deoxygenated blood from the body’s tissues back to the heart (via the systemic veins) and carry oxygenated blood from the lungs to the heart (via the pulmonary veins). Each vein has a wall of three layers – the tunica intima (endothelium), media (smooth muscle), and adventitia – similar to arteries but with much thinner, more compliant walls to accommodate larger volumes at low pressure.
+                </p>
+                <p class="text-gray-700 leading-relaxed mb-4">
+                    Most veins, especially in the legs, contain bicuspid valves formed from folds of the endothelium. These one-way valves ensure antegrade (upward) flow and prevent backflow under gravity. Because veins are at low pressure, they rely on two main external forces to propel blood upward: skeletal muscle pumps (especially calf muscles, often called the “second heart”) and changes in intrathoracic pressure with breathing. Contraction of the calf muscle pump compresses deep veins and pushes blood towards the heart; as muscles relax, venous valves prevent reflux.
+                </p>
+                <p class="text-700 leading-relaxed mb-4">
+                    Venous anatomy is typically divided into superficial veins, deep veins, and perforator veins. In the limbs, deep veins run alongside arteries within the muscles and handle the bulk of venous return (e.g., the femoral, popliteal, and tibial veins in the legs). In the legs, deep veins contain about 80–90% of the blood returning to the heart. Superficial veins lie just under the skin (e.g., the great and small saphenous veins in the legs) and connect to deep veins via muscular perforators. Superficial veins are visible under the skin and carry blood more slowly since they lack a surrounding muscle pump. Perforator (connecting) veins traverse the deep fascia to link the superficial and deep systems; they also contain valves that close during muscle contraction to prevent blood from flowing back to the superficial compartment.
+                </p>
+                <p class="text-gray-700 leading-relaxed">
+                    Together, these three subsystems maintain efficient venous return: muscle contractions compress deep veins and force blood centrally, venous valves close to prevent backflow, and perforators ensure blood from the skin surface drains into the deep system. Venous valves (present in both superficial and deep veins) are critical. Each valve has two leaflets that meet to block backward flow. The coordinated action of valves and calf muscle pumps maintains a low-pressure gradient toward the heart. Dysfunction (degeneration) of valve leaflets leads to venous reflux and hypertension, the fundamental problem in many venous diseases. Because veins operate at low pressure, they have less smooth muscle and elastic tissue than arteries. This makes their walls thinner and more distensible. The largest veins (like the inferior vena cava) have relatively thick adventitia for support, but overall veins are more collapsible than arteries. In summary, veins are flexible conduits with one-way valves and rely on muscle pumps and respiration to return blood; understanding this anatomy (as first detailed in classic texts) is key to grasping venous pathophysiology.
+                </p>
+            </div>
+        </section>
+
+        <section id="conditions" class="content-section min-h-screen py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-teal-900 mb-2">Interactive Vein Conditions Explorer</h2>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600">
+                    Our venous system can be affected by several conditions. Select a condition below to explore its definition, common symptoms, causes, risk factors, and potential complications. This section is designed to provide clear, focused information to help you understand each distinct pathology, drawing from comprehensive medical insights.
+                </p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8" id="condition-tabs">
+            </div>
+            <div id="condition-content" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg transition-all duration-500 min-h-[400px]">
+            </div>
+             <div class="mt-12">
+                <h3 class="text-2xl font-bold text-center text-teal-900 mb-4">Comparing Key Risk Factors</h3>
+                <p class="text-center max-w-2xl mx-auto text-gray-600 mb-6">This chart visualizes the overlap of major risk factors across common venous diseases. Notice how factors like obesity and prolonged immobility contribute to multiple conditions, highlighting the importance of lifestyle in overall vein health.</p>
+                <div class="chart-container">
+                    <canvas id="riskFactorChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="diagnostics" class="content-section min-h-screen py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-teal-900 mb-2">Diagnostic Methods and Tools</h2>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600">
+                    Accurate diagnosis is crucial for effective treatment of venous disorders. This section details the key methods and tools used by clinicians to evaluate venous health, from initial clinical assessment to advanced imaging and specialized tests. Each card provides a brief overview of the diagnostic approach.
+                </p>
+            </div>
+            <div id="diagnostics-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+        <section id="treatments" class="content-section min-h-screen py-16">
+             <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-teal-900 mb-2">The Journey of Vein Treatment</h2>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600">
+                    The approach to treating vein conditions has evolved dramatically over centuries. This interactive timeline highlights key milestones, from ancient observations to today's cutting-edge, minimally invasive procedures. Click on each point in history to reveal how our understanding and technology have advanced.
+                </p>
+            </div>
+
+            <div id="timeline-container" class="relative w-full overflow-x-auto pb-24">
+                <div class="relative w-full flex justify-between items-start pt-12 min-w-[1200px]">
+                    <div class="absolute top-[calc(50%_-_2px)] left-0 w-full h-1 bg-gray-300 transform -translate-y-1/2"></div>
+                    <div id="timeline-items" class="relative flex justify-between items-start w-full">
+                    </div>
+                </div>
+            </div>
+
+             <div class="mt-16">
+                <h3 class="text-2xl font-bold text-center text-teal-900 mb-4">Treatment Efficacy: Then vs. Now</h3>
+                <p class="text-center max-w-2xl mx-auto text-gray-600 mb-6">This chart starkly illustrates the revolution in varicose vein treatment. It compares the success rates of older, invasive surgeries with modern, minimally invasive techniques, underscoring the remarkable improvements in patient outcomes.</p>
+                <div class="chart-container">
+                    <canvas id="efficacyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg mt-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-teal-900 mb-6 text-center">Comprehensive Overview of Vascular Vein Treatments: From Historical Foundations to 2025 Innovations</h2>
+                <div id="detailed-treatments-content" class="space-y-10"></div>
+            </div>
+        </section>
+        
+        <section id="advances" class="content-section min-h-screen py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-teal-900 mb-2">Recent Advances in Venous Research and Technology</h2>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600">
+                    The field of venous medicine is continuously evolving with exciting innovations. This section highlights the latest breakthroughs in research, diagnostic tools, and treatment modalities, reflecting the dynamic progress towards more effective and patient-friendly care.
+                </p>
+            </div>
+            <div id="advances-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+        <section id="prevention" class="content-section min-h-screen py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-teal-900 mb-2">A Proactive Approach to Vein Health</h2>
+                <p class="text-lg max-w-3xl mx-auto text-gray-600">
+                    Maintaining healthy veins involves a combination of informed lifestyle choices and proactive measures. This section provides actionable guidance on preventive strategies, emphasizing how individual behaviors and public health initiatives contribute to long-term venous well-being.
+                </p>
+            </div>
+            <div id="prevention-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-100 mt-16">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-600">
+            <p>&copy; 2025 Interactive Vein Health Guide. Information based on the "Comprehensive Report on Vascular Veins".</p>
+            <p class="text-sm mt-2">This application is for informational purposes only and does not constitute medical advice. Consult a healthcare professional for diagnosis and treatment.</p>
+        </div>
+    </footer>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi,gu', // English, Hindi, Gujarati
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script>
+        const appData = {
+            anatomy: `
+                Veins form the low-pressure, high-capacitance part of the circulatory system that returns blood to the heart. They carry deoxygenated blood from the body’s tissues back to the heart (via the systemic veins) and carry oxygenated blood from the lungs to the heart (via the pulmonary veins). Each vein has a wall of three layers – the tunica intima (endothelium), media (smooth muscle), and adventitia – similar to arteries but with much thinner, more compliant walls to accommodate larger volumes at low pressure. Most veins, especially in the legs, contain bicuspid valves formed from folds of the endothelium. These one-way valves ensure antegrade (upward) flow and prevent backflow under gravity. Because veins are at low pressure, they rely on two main external forces to propel blood upward: skeletal muscle pumps (especially calf muscles, often called the “second heart”) and changes in intrathoracic pressure with breathing. Contraction of the calf muscle pump compresses deep veins and pushes blood towards the heart; as muscles relax, venous valves prevent reflux. Venous anatomy is typically divided into superficial veins, deep veins, and perforator veins. In the limbs, deep veins run alongside arteries within the muscles and handle the bulk of venous return (e.g. the femoral, popliteal, and tibial veins in the legs). In the legs, deep veins contain about 80–90% of the blood returning to the heart. Superficial veins lie just under the skin (e.g. the great and small saphenous veins in the legs) and connect to deep veins via muscular perforators. Superficial veins are visible under the skin and carry blood more slowly since they lack a surrounding muscle pump. Perforator (connecting) veins traverse the deep fascia to link the superficial and deep systems; they also contain valves that close during muscle contraction to prevent blood from flowing back to the superficial compartment. Together, these three subsystems maintain efficient venous return: muscle contractions compress deep veins and force blood centrally, venous valves close to prevent backflow, and perforators ensure blood from the skin surface drains into the deep system. Venous valves (present in both superficial and deep veins) are critical. Each valve has two leaflets that meet to block backward flow. The coordinated action of valves and calf muscle pumps maintains a low-pressure gradient toward the heart. Dysfunction (degeneration) of valve leaflets leads to venous reflux and hypertension, the fundamental problem in many venous diseases. Because veins operate at low pressure, they have less smooth muscle and elastic tissue than arteries. This makes their walls thinner and more distensible. The largest veins (like the inferior vena cava) have relatively thick adventitia for support, but overall veins are more collapsible than arteries. In summary, veins are flexible conduits with one-way valves and rely on muscle pumps and respiration to return blood; understanding this anatomy (as first detailed in classic texts) is key to grasping venous pathophysiology.
+            `,
+            conditions: [
+                {
+                    id: 'varicose',
+                    name: 'Varicose Veins',
+                    definition: "Visibly enlarged, twisted, and often bulging veins that commonly appear in the legs. Caused by increased blood pressure in superficial veins due to weakened one-way valves.",
+                    symptoms: "Twisted, bulging superficial veins; leg heaviness, aching, cramping, itching; edema often mild or absent. Skin may show lipodermatosclerosis in advanced cases.",
+                    riskFactors: "Age, female sex (hormonal influences), pregnancy/multiparity, obesity, family history, prolonged standing or sedentary behavior. Prior DVT or phlebitis can also predispose (post-thrombotic).",
+                    complications: "Painful ulcers, bleeding, persistent leg swelling (edema), skin and tissue problems, small risk of Deep Vein Thrombosis (DVT).",
+                    detailedDescription: "Varicose veins arise from progressive incompetence of venous valves in superficial veins. When valves fail, gravity causes blood to pool and veins dilate. The Global Burden study notes that valve “inadequacy results in reflux of blood” and that patients most commonly report leg pain, swelling, heaviness, and tingling. In the legs, the great saphenous vein is most often involved (running from ankle to groin). Risk factors include female sex, family history, pregnancy, obesity, and occupations requiring prolonged standing. If untreated, varicose veins may progress to chronic venous disease (edema, skin changes) and even thrombophlebitis."
+                },
+                {
+                    id: 'dvt',
+                    name: 'Deep Vein Thrombosis (DVT)',
+                    definition: "A serious condition where a blood clot (thrombus) forms in one or more deep veins, most commonly in the legs or pelvis.",
+                    symptoms: "Unilateral leg swelling, pain or tenderness (often calf), warmth and erythema; sometimes asymptomatic. Positive Homan sign is nonspecific. May lead to pulmonary embolism (acute SOB, chest pain) if clot dislodges.",
+                    riskFactors: "Immobilization (recent surgery, hospitalization, casts, long travel), cancer and chemotherapy, pregnancy or hormonal therapy, thrombophilias (e.g. Factor V Leiden), obesity, heart failure, previous DVT.",
+                    complications: "Pulmonary Embolism (PE), a life-threatening blockage in the lungs. Post-Thrombotic Syndrome (PTS), causing chronic leg pain and swelling.",
+                    detailedDescription: "Deep vein thrombosis (DVT) is clot formation in deep veins (typically lower leg or pelvic veins). The clot may completely or partially occlude flow. By Virchow’s triad, DVT arises when venous stasis, endothelial damage (e.g. surgery or trauma), or blood hypercoagulability come together. Common risk factors are immobilization (post-operative, casts, travel), active cancer or chemotherapy, pregnancy/hormones, inherited thrombophilias, obesity, and smoking. Patients may have unilateral leg swelling, warmth, tenderness, or may be asymptomatic; a D-dimer blood test can help screen for DVT in doubtful cases. If untreated, clots can propagate or embolize to the lungs."
+                },
+                {
+                    id: 'cvi',
+                    name: 'Chronic Venous Insufficiency (CVI)',
+                    definition: "A condition where leg veins cannot effectively pump blood back to the heart, typically due to damaged one-way valves, leading to blood pooling.",
+                    symptoms: "Chronic leg swelling and aching; skin hyperpigmentation (hemosiderin), eczema, and lipodermatosclerosis (thickened, indurated skin); varicose veins often present. Late-stage CVI causes venous ulcers.",
+                    riskFactors: "History of DVT or leg injury, obesity, pregnancy, prolonged standing/sitting, advanced age, family history.",
+                    complications: "Non-healing venous stasis ulcers, severe skin changes, increased risk of infection (cellulitis), secondary lymphedema.",
+                    detailedDescription: "Chronic venous insufficiency (CVI) refers to advanced, long-term dysfunction of venous return. It can follow recurrent DVT (post-thrombotic syndrome) or represent primary valvular failure. Pathophysiologically, reflux in superficial, perforating, or even deep veins causes sustained venous hypertension. This raises capillary pressures, leading to fluid leak (edema) and chronic inflammation of the skin. Clinically, CVI presents with persistent leg swelling, a sense of leg fatigue or pain, and distinctive skin findings (stasis dermatitis, hyperpigmentation, thickening). Advanced CVI (CEAP class C4–C6) produces lipodermatosclerosis and venous ulcers. Major factors are previous DVT, leg trauma or phlebitis, obesity, and jobs or lifestyles with little leg movement. Importantly, even inactivity (sitting or standing without calf muscle pump action) raises venous pressure over time."
+                },
+                {
+                    id: 'venous-ulcer',
+                    name: 'Venous (Stasis) Ulcer',
+                    definition: "Chronic venous hypertension in the leg causes capillary leak and skin breakdown. Often a late complication of CVI, especially after DVT.",
+                    symptoms: "Irregular, shallow ulcer (often medial ankle region); surrounding skin is hyperpigmented, indurated (lipodermatosclerosis), and may bleed or exude fluid. Ulcers heal slowly. Dull ache or itching may accompany.",
+                    riskFactors: "Long-standing venous disease, older age, obesity, family history, previous DVT or leg injury. Venous ulcers also correlate with varicose veins and smoking. Same as CVI.",
+                    complications: "Persistent non-healing wounds, increased risk of infection, chronic pain, significant impact on quality of life.",
+                    detailedDescription: "Venous (stasis) ulcers are the end-stage manifestation of chronic venous hypertension. They characteristically occur in the gaiter area (around the medial ankle) where venous pressure is highest. Chronic pooling leads to microvascular damage and tissue breakdown. Venous ulcers are typically shallow, irregularly shaped, and surrounded by discolored, hardened skin. Patients often complain of a dull ache or itching, and ulcer bases may ooze fluid. Key causes are long-standing CVI or DVT-induced changes. Risk factors mirror CVI’s: older age, obesity, prior venous clots, varicose veins, and immobility. Without treating the underlying venous hypertension (e.g. via compression), these ulcers heal very poorly."
+                }
+            ],
+            diagnostics: [
+                {
+                    title: 'Duplex Ultrasonography',
+                    icon: '🩺',
+                    description: 'High-resolution ultrasound with Doppler is the first-line test. It confirms DVT presence and identifies reflux/measures vein diameters for varicose veins/CVI.'
+                },
+                {
+                    title: 'Venography (Contrast Studies)',
+                    icon: '💉',
+                    description: 'Historically gold standard, now rarely used. May be for complex pelvic/iliofemoral disease or inconclusive ultrasound. CT/MR venography are modern analogues.'
+                },
+                {
+                    title: 'Laboratory Tests',
+                    icon: '🩸',
+                    description: 'A D-dimer blood test is very sensitive for DVT; a negative D-dimer in low-risk patients excludes acute thrombosis. Coagulation studies may be checked for recurrent DVT.'
+                },
+                {
+                    title: 'Physical Examination & Clinical Scores',
+                    icon: '📝',
+                    description: 'History and exam are important. Wells criteria (for DVT probability) or CEAP classification (for chronic venous disease) help guide workup. Objective testing is preferred.'
+                },
+                {
+                    title: 'Plethysmography & Photoplethysmography',
+                    icon: '📈',
+                    description: 'Noninvasive techniques measuring limb volume changes or venous refill times. Quantify venous hemodynamics (e.g., air plethysmography for reflux severity).'
+                },
+                {
+                    title: 'Dermatoscopy/Capillaroscopy',
+                    icon: '🔬',
+                    description: 'For microcirculation, capillaroscopy may reveal venous stasis changes. Primarily a research tool rather than routine diagnostic practice.'
+                },
+                {
+                    title: 'Venous Clinical Scoring (CEAP)',
+                    icon: '📊',
+                    description: 'The CEAP classification system (Clinical, Etiology, Anatomy, Pathophysiology) stages venous disease from C0 to C6. Aids communication and treatment planning, not a test.'
+                }
+            ],
+            timeline: [
+                { year: "1500 BCE", title: "Earliest Record", description: "The Ebers Papyrus provides the first documented description of varicose veins as 'tortuous and solid, with many knots', cautioning against intervention." },
+                { year: "400 BCE", title: "Hippocratic Era", description: "Hippocrates noted leg ulcers with varicose veins, suggesting punctures but generally opposing opening veins due to subsequent ulcers." },
+                { year: "0 CE", title: "Roman Surgery", description: "Physicians like Celsus report the first phlebectomy using a hook to avulse varicose veins and cauterization, performed without anesthesia." },
+                { year: "2nd CE", title: "Galen's Influence", description: "Galen recommended blunt hook vein removal and continued bloodletting, reflecting humoral theory. Early surgery was crude and painful." },
+                { year: "16th CE", title: "Renaissance Revival", description: "Ambroise Paré advocated compressive dressings. Fabricius discovers venous valves, improving anatomical understanding." },
+                { year: "1628", title: "Harvey's Circulation", description: "William Harvey's De Motu Cordis revolutionizes understanding of systemic circulation, including veins returning blood to the heart." },
+                { year: "18th CE", title: "Early Thrombosis Concepts", description: "John Hunter reports pulmonary embolism and distinguishes septic from traumatic phlebitis, laying groundwork for venous thromboembolism." },
+                { year: "19th CE", title: "Virchow's Triad", description: "Rudolf Virchow formulates the \"Virchow triad\" for thrombosis (stasis, endothelial injury, hypercoagulability). Otto Madelung proposes invasive excisions, while Friedrich Trendelenburg popularizes high ligation of the great saphenous vein." },
+                { year: "Early 20th CE", title: "Modern Compression & Ligation", description: "John Homans describes flush ligation of the saphenous vein. Compression bandaging (Martin, Unna boot) for ulcers becomes standard. Vein stripping and perforator ligation become standard operations." },
+                { year: "1970s–80s", title: "Duplex Ultrasound", description: "Duplex ultrasound revolutionizes noninvasive diagnosis of venous conditions, allowing for precise mapping of reflux and clots." },
+                { year: "c. 1999", title: "Minimally Invasive Revolution", description: "Endovenous Laser Ablation (EVLA) and Radiofrequency Ablation (RFA) are introduced, using heat to seal veins from within. This marks a paradigm shift to less pain and faster recovery." },
+                { year: "2023+", title: "Modern Advancements", description: "Focus on non-thermal, non-tumescent techniques like VenaSeal (medical glue) and Pulsed Field Ablation (PFA), alongside AI-powered diagnostics, for even greater precision and patient comfort." }
+            ],
+            treatments: {
+                evolution: {
+                    title: 'Evolution of Treatment Modalities',
+                    icon: '⚕️',
+                    points: [
+                        { text: 'Surgical Era (Pre-1980s): Vein stripping and ligation dominated, requiring general anesthesia, hospital stays, and carrying high recurrence rates (20-30%) and complications like scarring and nerve damage.' },
+                        { text: 'Minimally Invasive Revolution (2000s–Present): Thermal ablation (e.g., Endovenous Laser Ablation [EVLA], Radiofrequency Ablation [RFA]) replaced surgery. Both use catheter-delivered heat under local anesthesia to collapse veins, with >95% success rates and minimal scarring.' },
+                        { text: 'Non-Thermal Innovations (2010s–2025): VenaSeal (medical glue) and ClariVein/Mechanochemical Ablation (MOCA) emerged, avoiding heat-related nerve damage. VenaSeal seals veins instantly, enabling immediate mobility without compression stockings.' }
+                    ]
+                },
+                goldStandard: {
+                    title: '2025 Gold-Standard Treatments',
+                    icon: '🏥',
+                    subsections: [
+                        {
+                            heading: 'Endovenous Laser Ablation (EVLA) & Radiofrequency Ablation (RFA)',
+                            points: [
+                                { text: 'Mechanism: Heat-induced collagen contraction to seal saphenous veins.' },
+                                { text: 'Advantages: >98% success rate, 30-minute outpatient procedure, low recurrence (5% at 5 years).' },
+                                { text: 'Considerations: RFA causes less post-procedural pain than EVLA due to gentler heating.' }
+                            ]
+                        },
+                        {
+                            heading: 'Sclerotherapy Innovations',
+                            points: [
+                                { text: 'Ultrasound-Guided Foam Sclerotherapy (UGFS): Foam sclerosants (e.g., Varithena) target larger veins under imaging, with 80-90% efficacy.' },
+                                { text: 'Catheter-Assisted: ClariVein uses rotating tips to disperse sclerosant deep into veins; Flebogrif employs expandable arms for mechanical abrasion + sclerotherapy (92% success).' }
+                            ]
+                        },
+                        {
+                            heading: 'VenaSeal Medical Glue',
+                            points: [
+                                { text: 'Application: Cyanoacrylate adhesive injected to permanently seal veins.' },
+                                { text: 'Benefits: No anesthesia/compression needed, ideal for patients with heat sensitivity or allergies to sclerosants.' }
+                            ]
+                        }
+                    ],
+                    table: {
+                        headers: ['Treatment', 'Best For', 'Recovery Time', 'Key Limitations'],
+                        rows: [
+                            ['EVLA/RFA', 'Large saphenous veins', '1–2 days', 'Risk of nerve injury below knee'],
+                            ['VenaSeal', 'Medium-sized veins', 'Immediate', 'Cyanoacrylate allergy'],
+                            ['UGFS/ClariVein', 'Medium veins', '1–3 days', 'Allergic reactions, multiple sessions'],
+                            ['Sclerotherapy', 'Spider/small veins', '<24 hours', 'Less effective for large veins']
+                        ]
+                    }
+                },
+                cuttingEdge: {
+                    title: 'Cutting-Edge Techniques (2025)',
+                    icon: '🔬',
+                    points: [
+                        { text: 'High-Definition Ultrasound Mapping: Enables 3D vein mapping for precision targeting of reflux points.' },
+                        { text: 'Intravascular Ultrasound (IVUS): Critical for detecting pelvic venous obstruction missed by CT/MRI, reducing post-procedural DVT risk.' },
+                        { text: 'Faster Treatment Protocols: Ongoing trials for accelerated ablation techniques (e.g., reduced energy delivery times) to shorten procedures.' }
+                    ]
+                },
+                conservativeAdjuncts: {
+                    title: 'Conservative Management & Adjuncts',
+                    icon: '⚠️',
+                    points: [
+                        { text: 'Compression Therapy: Graduated stockings reduce swelling/pain and are essential pre-/post-procedure. Daily use improves quality of life but compliance is challenging.' },
+                        { text: 'Lifestyle Modifications: Regular exercise, weight management, and avoiding prolonged sitting/standing slow disease progression.' },
+                        { text: 'Venoactive Drugs: Limited evidence supports horse chestnut extract or micronized purified flavonoid fraction for symptom relief but not as curative treatments.' }
+                    ]
+                },
+                personalizedPlanning: {
+                    title: 'Personalized Treatment Planning',
+                    icon: '🧩',
+                    subsections: [
+                        {
+                            heading: 'Key Decision Factors',
+                            points: [
+                                { text: 'Vein Characteristics: Size, location (e.g., below-knee veins avoid thermal ablation), and reflux severity.' },
+                                { text: 'Patient Profile: Allergies (e.g., sclerosants/glue), age (glue preferred for elderly), and comorbidities (e.g., DVT history).' },
+                                { text: 'Symptom Severity: Cosmetic concerns (spider veins): Sclerotherapy. Ulcers/advanced CVI: Combined thermal ablation + phlebectomy.' }
+                            ]
+                        },
+                        {
+                            heading: 'Staged vs. Single-Session Approaches',
+                            points: [
+                                { text: 'Single-Stage: Thermal ablation + phlebectomy for extensive varicosities to prevent thrombosed remnants.' },
+                                { text: 'Staged: For low pain tolerance or complex cases (e.g., pelvic venous obstruction addressed first).' }
+                            ]
+                        }
+                    ],
+                    table: {
+                        headers: ['CEAP Class', 'Symptoms', 'Recommended Treatment'],
+                        rows: [
+                            ['C2 (Varicose)', 'Visible bulging veins', 'EVLA/RFA or VenaSeal'],
+                            ['C4a (Eczema)', 'Skin changes', 'Ablation + compression therapy'],
+                            ['C6 (Ulcer)', 'Active venous ulcer', 'Iliofemoral stenting + ablation']
+                        ]
+                    }
+                },
+                futureDirections: {
+                    title: 'Future Directions (2025–2030)',
+                    icon: '🔮',
+                    points: [
+                        { text: 'Gene Therapy: Targeting FOXC2 mutations to enhance valve integrity.' },
+                        { text: 'Wearable Tech: AI-driven compression devices with real-time pressure adjustment.' },
+                        { text: 'Telemedicine Integration: Post-procedure monitoring via apps for faster complication detection.' },
+                        { text: 'Bioabsorbable Scaffolds: Vein implants promoting natural tissue regeneration.' }
+                    ]
+                },
+                providerSelection: {
+                    title: 'Selecting a Provider: Critical Criteria',
+                    icon: '💡',
+                    points: [
+                        { text: 'Specialization: Board-certified phlebologists or vascular surgeons.' },
+                        { text: 'Technology Access: Clinics offering multiple modalities (e.g., RFA, VenaSeal, UGFS) ensure tailored care.' },
+                        { text: 'Ultrasound Expertise: In-house duplex imaging for accurate diagnostics.' },
+                        { text: 'Patient-Centered Metrics: Transparency in success rates, before/after galleries, and Medicare/insurance acceptance.' }
+                    ]
+                },
+                mythsDebunked: {
+                    title: 'Myths Debunked',
+                    icon: '❌',
+                    points: [
+                        { text: 'Myth: "Natural remedies cure varicose veins." Reality: Supplements (e.g., grape seed extract) show no efficacy in reversing venous pathology.' },
+                        { text: 'Myth: "Spider veins evolve into varicose veins." Reality: These are distinct conditions; spider veins rarely progress.' }
+                    ]
+                },
+                conclusion: {
+                    title: 'Conclusion: Toward Precision Vein Care in 2025',
+                    icon: '✅',
+                    text: 'Treatment has shifted from invasive stripping to image-guided, ambulatory procedures prioritizing patient comfort and anatomical precision. Key trends include: Dominance of non-thermal options (VenaSeal, MOCA) for reduced complications. Personalization based on vein mapping, genetics, and lifestyle. Integrated care combining ablation, sclerotherapy, and compression. For optimal outcomes, consult specialists accredited by organizations like the American Vein and Lymphatic Society (AVLS) and seek centers participating in conferences like VISION 2025 to access cutting-edge protocols.'
+                }
+            },
+            advances: [
+                {
+                    title: 'Bioprosthetic Venous Valves',
+                    icon: '🫀',
+                    description: 'First-in-human trials of novel tissue-engineered valves implanted in femoral/iliac veins to restore one-way flow for severe CVI, showing improved reflux metrics.'
+                },
+                {
+                    title: 'Improved Thrombectomy Devices',
+                    icon: '🔗',
+                    description: 'Mechanical thrombectomy systems like ClotTriever and Lightning Flash allow rapid extraction of large clots from deep veins without systemic thrombolysis.'
+                },
+                {
+                    title: 'Novel Ablation Technologies',
+                    icon: '⚡',
+                    description: 'Non-thermal mechanochemical ablation (ClariVein), sonovein (high-intensity ultrasound), and cyanoacrylate glue closure (VenaSeal) offer new ways to seal veins.'
+                },
+                {
+                    title: 'Enhanced Stenting & Imaging',
+                    icon: '🔬',
+                    description: 'New dedicated venous stents for iliac vein compression and post-thrombotic stenosis, guided by intravascular ultrasound (IVUS) for precise placement.'
+                },
+                {
+                    title: 'Adjunctive Therapies for Ulcers',
+                    icon: '🩹',
+                    description: 'Emerging aids for venous ulcers include electrical muscle stimulators (e.g., Geko device to double healing rates), wearable compression, and bioengineered skin substitutes.'
+                },
+                {
+                    title: 'Antithrombotic Pharmacology',
+                    icon: '💊',
+                    description: 'Widespread use of DOACs simplifies DVT treatment. Research into novel anticoagulants (Factor XI inhibitors) and antiplatelet drugs is ongoing.'
+                },
+                {
+                    title: 'Telemedicine & AI',
+                    icon: '📱',
+                    description: 'Remote monitoring of venous leg ulcers via smartphone apps, AI for leg image analysis, and automated duplex analysis software are in pilot stages.'
+                }
+            ],
+            prevention: [
+                { icon: '🏃', title: 'Exercise Regularly', description: 'Activity like walking strengthens calf muscles, the “second heart,” improving blood flow. Aim for 30 minutes most days.' },
+                { icon: '⚖️', title: 'Maintain Healthy Weight', description: 'Excess weight increases pressure on leg veins. Weight management is a crucial preventive strategy.' },
+                { icon: '🍎', title: 'Eat a Balanced Diet', description: 'A high-fiber, low-sodium diet prevents constipation, which increases venous pressure. Vitamins C, E, K, and flavonoids support vein wall integrity.' },
+                { icon: '💧', title: 'Stay Hydrated', description: 'Adequate water intake is essential for optimal blood consistency and circulation, helping to prevent clots.' },
+                { icon: '🚭', title: 'Quit Smoking', description: 'Smoking damages blood vessels and affects clotting, significantly increasing the risk of DVT and other vascular issues.' },
+                { icon: '🪑', title: 'Avoid Prolonged Stillness', description: 'Take frequent breaks from long periods of sitting or standing. Move around to prevent blood from pooling in your legs.' },
+                { icon: '🦵', title: 'Elevate Your Legs', description: 'Raising legs above heart level for 15 minutes, 3-4 times a day, reduces pressure and alleviates swelling.' },
+                { icon: '👟', title: 'Proper Footwear & Clothing', description: 'Avoid high heels and tight clothing around the waist or legs, as they can restrict blood flow.' },
+                { icon: '🧦', title: 'Compression Stockings', description: 'These garments apply graduated pressure to assist veins in moving blood back towards the heart, reducing swelling and risk.' },
+                { icon: '🚶‍♀️', title: 'Early Mobilization (Hospital)', description: 'In-hospital, early ambulation after surgery or during illness is crucial to prevent venous stasis and reduce post-thrombotic syndrome.' },
+                { icon: '📢', title: 'Awareness & Screening', description: 'Awareness programs inform people about risk factors. Occupational health programs encourage breaks and compression gear in high-risk professions.' },
+                { icon: '🌍', title: 'Socioeconomic Considerations', description: 'Public health efforts include improving wound care resources for chronic ulcers and ensuring access to compression garments for vulnerable populations.' }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNavLinks = document.querySelectorAll('.nav-link-mobile');
+            const actionLink = document.querySelector('.nav-link-action');
+
+            // No longer need to set active link based on hash for display:none sections
+            // But keep for scroll-to-section active class visual feedback
+            function updateActiveNavOnScroll() {
+                let currentHash = '';
+                sections.forEach(section => {
+                    const rect = section.getBoundingClientRect();
+                    // If section is at least 30% visible in viewport
+                    if (rect.top <= window.innerHeight / 3 && rect.bottom >= window.innerHeight / 3) {
+                        currentHash = '#' + section.id;
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === currentHash) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            
+            // Initial call and attach scroll listener
+            updateActiveNavOnScroll();
+            window.addEventListener('scroll', updateActiveNavOnScroll);
+
+            function handleNavClick(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+                // Update active class immediately on click
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === targetId) {
+                        link.classList.add('active');
+                    }
+                });
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            }
+            
+            navLinks.forEach(link => link.addEventListener('click', handleNavClick));
+            mobileNavLinks.forEach(link => link.addEventListener('click', handleNavClick));
+            if(actionLink) actionLink.addEventListener('click', handleNavClick);
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            setupConditions();
+            setupDiagnostics();
+            setupTimeline();
+            setupTreatments();
+            setupAdvances();
+            setupPrevention();
+            renderRiskFactorChart();
+            renderEfficacyChart();
+            
+            // No setActiveLink(window.location.hash) needed as sections are always visible
+        });
+        
+        function setupConditions() {
+            const tabsContainer = document.getElementById('condition-tabs');
+            const contentContainer = document.getElementById('condition-content');
+            
+            appData.conditions.forEach((condition, index) => {
+                const button = document.createElement('button');
+                button.className = 'tab-button text-sm md:text-base font-semibold py-2 px-4 rounded-full bg-gray-200 text-gray-700 hover:bg-teal-100';
+                button.textContent = condition.name;
+                button.dataset.id = condition.id;
+                // Only make the first tab active by default for internal tabs
+                if (index === 0) button.classList.add('active');
+                tabsContainer.appendChild(button);
+            });
+            
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const id = e.target.dataset.id;
+                    tabsContainer.querySelector('.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    renderConditionContent(id);
+                }
+            });
+            
+            // Render the first condition's content by default
+            renderConditionContent(appData.conditions[0].id);
+        }
+
+        function renderConditionContent(id) {
+            const contentContainer = document.getElementById('condition-content');
+            const condition = appData.conditions.find(c => c.id === id);
+            contentContainer.innerHTML = `
+                <div class="animate-fadeIn">
+                    <h3 class="text-3xl font-bold text-teal-800 mb-4">${condition.name}</h3>
+                    <p class="text-lg text-gray-700 mb-6">${condition.definition}</p>
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-teal-50/50 p-4 rounded-lg">
+                            <h4 class="font-bold text-teal-700 mb-2">Common Symptoms</h4>
+                            <p class="text-gray-600">${condition.symptoms}</p>
+                        </div>
+                        <div class="bg-amber-50/50 p-4 rounded-lg">
+                            <h4 class="font-bold text-amber-700 mb-2">Key Risk Factors</h4>
+                            <p class="text-gray-600">${condition.riskFactors}</p>
+                        </div>
+                        <div class="bg-red-50/50 p-4 rounded-lg md:col-span-2">
+                             <h4 class="font-bold text-red-700 mb-2">Potential Complications (If Untreated)</h4>
+                            <p class="text-gray-600">${condition.complications}</p>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-teal-700 mb-2">Detailed Overview</h4>
+                    <p class="text-gray-600 leading-relaxed">${condition.detailedDescription}</p>
+                </div>
+            `;
+        }
+
+        function setupDiagnostics() {
+            const grid = document.getElementById('diagnostics-grid');
+            grid.innerHTML = appData.diagnostics.map(item => `
+                <div class="card-item bg-white p-6 rounded-2xl shadow-md flex flex-col items-center text-center">
+                    <span class="text-5xl mb-4">${item.icon}</span>
+                    <h4 class="text-xl font-bold text-teal-800 mb-2">${item.title}</h4>
+                    <p class="text-gray-600">${item.description}</p>
+                </div>
+            `).join('');
+        }
+        
+        function setupTimeline() {
+            const timelineItemsContainer = document.getElementById('timeline-items');
+            timelineItemsContainer.innerHTML = appData.timeline.map(item => `
+                <div class="timeline-item flex flex-col items-center relative">
+                    <div class="w-6 h-6 bg-white border-4 border-teal-600 rounded-full z-10"></div>
+                    <p class="mt-2 font-bold text-teal-800 text-sm md:text-base whitespace-nowrap">${item.year}</p>
+                    <div class="timeline-content">
+                        <h4 class="font-bold text-sm text-teal-700">${item.title}</h4>
+                        <p class="text-xs text-gray-600 mt-1">${item.description}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            timelineItemsContainer.addEventListener('click', (e) => {
+                const item = e.target.closest('.timeline-item');
+                if (item) {
+                    const currentActive = timelineItemsContainer.querySelector('.timeline-item.active');
+                    if (currentActive && currentActive !== item) {
+                        currentActive.classList.remove('active');
+                    }
+                    item.classList.toggle('active');
+                }
+            });
+        }
+
+        function setupTreatments() {
+            const detailedTreatmentsContent = document.getElementById('detailed-treatments-content');
+            let html = '';
+
+            for (const key in appData.treatments) {
+                const section = appData.treatments[key];
+                html += `
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-2xl font-bold text-teal-800 mb-4 flex items-center">
+                            <span class="text-4xl mr-3">${section.icon || ''}</span> ${section.title}
+                        </h3>
+                `;
+
+                if (section.text) {
+                    html += `<p class="text-gray-700 leading-relaxed">${section.text}</p>`;
+                }
+
+                if (section.points) {
+                    html += '<ul class="list-disc styled-list pl-5 space-y-2">';
+                    section.points.forEach(point => {
+                        html += `<li><p class="text-gray-700">${point.text}</p></li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                if (section.subsections) {
+                    section.subsections.forEach(subsection => {
+                        html += `<h4 class="text-xl font-bold text-teal-700 mt-6 mb-3">${subsection.heading}</h4>`;
+                        html += '<ul class="list-disc styled-list pl-5 space-y-2">';
+                        subsection.points.forEach(point => {
+                            html += `<li><p class="text-gray-700">${point.text}</p></li>`;
+                        });
+                        html += '</ul>';
+                    });
+                }
+
+                if (section.table) {
+                    html += `
+                        <div class="overflow-x-auto mt-6">
+                            <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                <thead>
+                                    <tr>
+                                        ${section.table.headers.map(header => `<th class="py-3 px-4 bg-teal-50 text-teal-700 text-left font-semibold border-b border-gray-200">${header}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${section.table.rows.map(row => `
+                                        <tr>
+                                            ${row.map(cell => `<td class="py-3 px-4 border-b border-gray-200 text-gray-700">${cell}</td>`).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+                html += '</div>'; // Close section div
+                if (key !== 'conclusion') { // Add separator for all but the last section
+                    html += '<hr class="my-8 border-gray-300">';
+                }
+            }
+
+            detailedTreatmentsContent.innerHTML = html;
+        }
+
+        function setupAdvances() {
+            const grid = document.getElementById('advances-grid');
+            grid.innerHTML = appData.advances.map(item => `
+                <div class="card-item bg-white p-6 rounded-2xl shadow-md flex flex-col items-center text-center">
+                    <span class="text-5xl mb-4">${item.icon}</span>
+                    <h4 class="text-xl font-bold text-teal-800 mb-2">${item.title}</h4>
+                    <p class="text-gray-600">${item.description}</p>
+                </div>
+            `).join('');
+        }
+        
+        function setupPrevention() {
+            const grid = document.getElementById('prevention-grid');
+            grid.innerHTML = appData.prevention.map(item => `
+                <div class="card-item bg-white p-6 rounded-2xl shadow-md flex flex-col items-center text-center">
+                    <span class="text-5xl mb-4">${item.icon}</span>
+                    <h4 class="text-xl font-bold text-teal-800 mb-2">${item.title}</h4>
+                    <p class="text-gray-600">${item.description}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderRiskFactorChart() {
+            const ctx = document.getElementById('riskFactorChart').getContext('2d');
+            const labels = ['Obesity', 'Prolonged Immobility', 'Family History', 'Pregnancy', 'Age', 'Smoking'];
+            const data = {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Varicose Veins',
+                        data: [1, 1, 1, 1, 1, 0],
+                        backgroundColor: 'rgba(20, 184, 166, 0.6)',
+                        borderColor: 'rgba(13, 148, 136, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'DVT',
+                        data: [1, 1, 1, 1, 1, 1],
+                        backgroundColor: 'rgba(245, 158, 11, 0.6)',
+                        borderColor: 'rgba(217, 119, 6, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'CVI',
+                        data: [1, 1, 1, 1, 1, 1],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+            new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                       label += (context.parsed.y === 1) ? 'Significant Risk Factor' : 'Not a Primary Risk Factor';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if(value === 1) return 'Yes';
+                                    if(value === 0) return 'No';
+                                    return null;
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Is it a Key Risk Factor?'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderEfficacyChart() {
+            const ctx = document.getElementById('efficacyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Older: Vein Stripping', 'Modern: EVLA / RFA'],
+                    datasets: [{
+                        label: 'Treatment Success Rate',
+                        data: [50, 98],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.6)',
+                            'rgba(16, 185, 129, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(220, 38, 38, 1)',
+                            'rgba(5, 150, 105, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                         tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Success Rate: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Success Rate (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
