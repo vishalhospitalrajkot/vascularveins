@@ -126,6 +126,16 @@
         .condition-tab-content.active {
             display: block;
         }
+        #ai-output p {
+            margin-bottom: 0.5rem;
+        }
+        #ai-output ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+        }
+        #ai-output li {
+            margin-bottom: 0.25rem;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -143,6 +153,7 @@
                 <a href="#treatments" class="nav-link text-lg font-semibold pb-1">Treatments</a>
                 <a href="#advances" class="nav-link text-lg font-semibold pb-1">Advances</a>
                 <a href="#prevention" class="nav-link text-lg font-semibold pb-1">Prevention</a>
+                <a href="#contact" class="nav-link text-lg font-semibold pb-1">Contact</a>
             </div>
             <div class="md:hidden mt-4">
                 <button id="mobile-menu-button" class="text-gray-700 focus:outline-none">
@@ -157,6 +168,7 @@
             <a href="#treatments" class="nav-link-mobile block text-lg font-semibold py-1">Treatments</a>
             <a href="#advances" class="nav-link-mobile block text-lg font-semibold py-1">Advances</a>
             <a href="#prevention" class="nav-link-mobile block text-lg font-semibold py-1">Prevention</a>
+            <a href="#contact" class="nav-link-mobile block text-lg font-semibold py-1">Contact</a>
         </div>
     </header>
 
@@ -260,6 +272,24 @@
             </div>
             <div id="advances-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             </div>
+
+            <!-- AI-Powered Latest Treatment Updates Section -->
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg mt-12">
+                <h3 class="text-3xl font-bold text-teal-800 mb-4 text-center">
+                    <span class="text-4xl mr-2">🤖</span> Latest AI-Powered Treatment Insights
+                </h3>
+                <p class="text-center text-gray-600 mb-6">
+                    Click the button below to get an AI-generated summary of the most recent and emerging treatments for vascular vein conditions.
+                </p>
+                <div class="text-center mb-6">
+                    <button id="get-ai-insights-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-700 transition-colors text-lg shadow-lg">
+                        Get Latest AI Insights
+                    </button>
+                </div>
+                <div id="ai-output" class="bg-blue-50/50 p-6 rounded-lg text-gray-700 text-left min-h-[100px] flex items-center justify-center">
+                    <p class="text-gray-500">Click the button above to load the latest AI insights.</p>
+                </div>
+            </div>
         </section>
 
         <section id="prevention" class="content-section min-h-screen py-16">
@@ -270,6 +300,49 @@
                 </p>
             </div>
             <div id="prevention-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+        <!-- New Contact Section -->
+        <section id="contact" class="content-section min-h-screen py-16 bg-gradient-to-br from-teal-50 to-blue-50 rounded-3xl shadow-xl mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-teal-900 mb-4">Contact Us</h2>
+                <p class="text-lg max-w-3xl mx-auto text-gray-700">
+                    Reach out to Vishal Hospital for medical inquiries or Vishal Banquet Hall for event bookings.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                <!-- Vishal Hospital Contact Card -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-teal-200 flex flex-col items-center text-center">
+                    <h3 class="text-3xl font-bold text-teal-700 mb-4">Vishal Hospital</h3>
+                    <p class="text-gray-700 mb-2 leading-relaxed">
+                        <strong class="text-teal-600">Address:</strong> Vishal Hospital, Kailashwadi Main Road, opposite Taluka Police Choki, Junction Plot, Rajkot, Gujarat 360001
+                    </p>
+                    <p class="text-gray-700 mb-2">
+                        <strong class="text-teal-600">Mobile:</strong> <a href="tel:9228105245" class="text-blue-600 hover:underline">9228105245</a>
+                    </p>
+                    <p class="text-gray-700 mb-2">
+                        <strong class="text-teal-600">Landline:</strong> <a href="tel:02812450408" class="text-blue-600 hover:underline">0281-2450408</a>
+                    </p>
+                    <p class="text-gray-700">
+                        <strong class="text-teal-600">Website:</strong> <a href="https://vishalhospitalrajkot.github.io/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">vishalhospitalrajkot.github.io</a>
+                    </p>
+                </div>
+
+                <!-- Vishal Banquet Hall Contact Card -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-blue-200 flex flex-col items-center text-center">
+                    <h3 class="text-3xl font-bold text-blue-700 mb-4">Vishal Banquet Hall</h3>
+                    <p class="text-gray-700 mb-2 leading-relaxed">
+                        <strong class="text-blue-600">Address:</strong> Vishal Banquet Hall, Gaya-Dobhi Rd, Musatpura, Bihar 823004
+                    </p>
+                    <p class="text-gray-700 mb-2">
+                        <strong class="text-blue-600">Mobile:</strong> <a href="tel:9228105245" class="text-blue-600 hover:underline">9228105245</a>
+                    </p>
+                    <p class="text-gray-700">
+                        <strong class="text-blue-600">Website:</strong> <a href="https://vishalbanquethall1.github.io/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">vishalbanquethall1.github.io</a>
+                    </p>
+                </div>
             </div>
         </section>
 
@@ -296,7 +369,7 @@
     <script>
         const appData = {
             anatomy: `
-                Veins form the low-pressure, high-capacitance part of the circulatory system that returns blood to the heart. They carry deoxygenated blood from the body’s tissues back to the heart (via the systemic veins) and carry oxygenated blood from the lungs to the heart (via the pulmonary veins). Each vein has a wall of three layers – the tunica intima (endothelium), media (smooth muscle), and adventitia – similar to arteries but with much thinner, more compliant walls to accommodate larger volumes at low pressure. Most veins, especially in the legs, contain bicuspid valves formed from folds of the endothelium. These one-way valves ensure antegrade (upward) flow and prevent backflow under gravity. Because veins are at low pressure, they rely on two main external forces to propel blood upward: skeletal muscle pumps (especially calf muscles, often called the “second heart”) and changes in intrathoracic pressure with breathing. Contraction of the calf muscle pump compresses deep veins and pushes blood towards the heart; as muscles relax, venous valves prevent reflux. Venous anatomy is typically divided into superficial veins, deep veins, and perforator veins. In the limbs, deep veins run alongside arteries within the muscles and handle the bulk of venous return (e.g. the femoral, popliteal, and tibial veins in the legs). In the legs, deep veins contain about 80–90% of the blood returning to the heart. Superficial veins lie just under the skin (e.g. the great and small saphenous veins in the legs) and connect to deep veins via muscular perforators. Superficial veins are visible under the skin and carry blood more slowly since they lack a surrounding muscle pump. Perforator (connecting) veins traverse the deep fascia to link the superficial and deep systems; they also contain valves that close during muscle contraction to prevent blood from flowing back to the superficial compartment. Together, these three subsystems maintain efficient venous return: muscle contractions compress deep veins and force blood centrally, venous valves close to prevent backflow, and perforators ensure blood from the skin surface drains into the deep system. Venous valves (present in both superficial and deep veins) are critical. Each valve has two leaflets that meet to block backward flow. The coordinated action of valves and calf muscle pumps maintains a low-pressure gradient toward the heart. Dysfunction (degeneration) of valve leaflets leads to venous reflux and hypertension, the fundamental problem in many venous diseases. Because veins operate at low pressure, they have less smooth muscle and elastic tissue than arteries. This makes their walls thinner and more distensible. The largest veins (like the inferior vena cava) have relatively thick adventitia for support, but overall veins are more collapsible than arteries. In summary, veins are flexible conduits with one-way valves and rely on muscle pumps and respiration to return blood; understanding this anatomy (as first detailed in classic texts) is key to grasping venous pathophysiology.
+                Veins form the low-pressure, high-capacitance part of the circulatory system that returns blood to the heart. They carry deoxygenated blood from the body’s tissues back to the heart (via the systemic veins) and carry oxygenated blood from the lungs to the heart (via the pulmonary veins). Each vein has a wall of three layers – the tunica intima (endothelium), media (smooth muscle), and adventitia – similar to arteries but with much thinner, more compliant walls to accommodate larger volumes at low pressure. Most veins, especially in the legs, contain bicuspid valves formed from folds of the endothelium. These one-way valves ensure antegrade (upward) flow and prevent backflow under gravity. Because veins are at low pressure, they rely on two main external forces to propel blood upward: skeletal muscle pumps (especially calf muscles, often called “second heart”) and changes in intrathoracic pressure with breathing. Contraction of the calf muscle pump compresses deep veins and pushes blood towards the heart; as muscles relax, venous valves prevent reflux. Venous anatomy is typically divided into superficial veins, deep veins, and perforator veins. In the limbs, deep veins run alongside arteries within the muscles and handle the bulk of venous return (e.g. the femoral, popliteal, and tibial veins in the legs). In the legs, deep veins contain about 80–90% of the blood returning to the heart. Superficial veins lie just under the skin (e.g. the great and small saphenous veins in the legs) and connect to deep veins via muscular perforators. Superficial veins are visible under the skin and carry blood more slowly since they lack a surrounding muscle pump. Perforator (connecting) veins traverse the deep fascia to link the superficial and deep systems; they also contain valves that close during muscle contraction to prevent blood from flowing back to the superficial compartment. Together, these three subsystems maintain efficient venous return: muscle contractions compress deep veins and force blood centrally, venous valves close to prevent backflow, and perforators ensure blood from the skin surface drains into the deep system. Venous valves (present in both superficial and deep veins) are critical. Each valve has two leaflets that meet to block backward flow. The coordinated action of valves and calf muscle pumps maintains a low-pressure gradient toward the heart. Dysfunction (degeneration) of valve leaflets leads to venous reflux and hypertension, the fundamental problem in many venous diseases. Because veins operate at low pressure, they have less smooth muscle and elastic tissue than arteries. This makes their walls thinner and more distensible. The largest veins (like the inferior vena cava) have relatively thick adventitia for support, but overall veins are more collapsible than arteries. In summary, veins are flexible conduits with one-way valves and rely on muscle pumps and respiration to return blood; understanding this anatomy (as first detailed in classic texts) is key to grasping venous pathophysiology.
             `,
             conditions: [
                 {
@@ -376,7 +449,7 @@
             timeline: [
                 { year: "1500 BCE", title: "Earliest Record", description: "The Ebers Papyrus provides the first documented description of varicose veins as 'tortuous and solid, with many knots', cautioning against intervention." },
                 { year: "400 BCE", title: "Hippocratic Era", description: "Hippocrates noted leg ulcers with varicose veins, suggesting punctures but generally opposing opening veins due to subsequent ulcers." },
-                { year: "0 CE", title: "Roman Surgery", description: "Physicians like Celsus report the first phlebectomy using a hook to avulse varicose veins and cauterization, performed without anesthesia." },
+                { year: "0 CE", title: "Roman Surgery", title: "Roman Surgery", description: "Physicians like Celsus report the first phlebectomy using a hook to avulse varicose veins and cauterization, performed without anesthesia." },
                 { year: "2nd CE", title: "Galen's Influence", description: "Galen recommended blunt hook vein removal and continued bloodletting, reflecting humoral theory. Early surgery was crude and painful." },
                 { year: "16th CE", title: "Renaissance Revival", description: "Ambroise Paré advocated compressive dressings. Fabricius discovers venous valves, improving anatomical understanding." },
                 { year: "1628", title: "Harvey's Circulation", description: "William Harvey's De Motu Cordis revolutionizes understanding of systemic circulation, including veins returning blood to the heart." },
@@ -544,8 +617,7 @@
                 {
                     title: 'Antithrombotic Pharmacology',
                     icon: '💊',
-                    description: 'Widespread use of DOACs simplifies DVT treatment. Research into novel anticoagulants (Factor XI inhibitors) and antiplatelet drugs is ongoing.'
-                },
+                    description: 'Widespread use of DOACs simplifies DVT treatment. Research into novel anticoagulants (Factor XI inhibitors) and antiplatelet drugs is ongoing.' },
                 {
                     title: 'Telemedicine & AI',
                     icon: '📱',
@@ -633,8 +705,7 @@
             setupPrevention();
             renderRiskFactorChart();
             renderEfficacyChart();
-            
-            // No setActiveLink(window.location.hash) needed as sections are always visible
+            setupAITreatments(); // Initialize the AI section
         });
         
         function setupConditions() {
@@ -932,6 +1003,58 @@
                     }
                 }
             });
+        }
+
+        async function getLatestAITreatments() {
+            const aiOutputDiv = document.getElementById('ai-output');
+            const aiButton = document.getElementById('get-ai-insights-btn');
+
+            aiOutputDiv.innerHTML = '<p class="text-center text-gray-500">Generating latest insights... Please wait. This may take a moment.</p>';
+            aiButton.disabled = true;
+            aiButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                let chatHistory = [];
+                const prompt = "Provide a concise summary of the 3-5 most significant or emerging future treatments and technologies for vascular vein conditions (e.g., varicose veins, DVT, CVI, venous ulcers) that are either in clinical trials, recently approved, or on the horizon (e.g., within the next 1-5 years). Focus on innovations not widely adopted yet. Format this as brief bullet points with a short description for each, suitable for a web page update. Do not include any introductory or concluding remarks, just the bullet points.";
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will provide this at runtime if left empty
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    // Replace markdown list with HTML list for better styling
+                    const formattedText = text.replace(/^- (.*)/gm, '<li>$1</li>');
+                    aiOutputDiv.innerHTML = `<ul class="list-disc pl-5 space-y-2">${formattedText}</ul>`;
+                } else {
+                    aiOutputDiv.innerHTML = '<p class="text-red-500">Error: Could not retrieve AI insights. Please try again.</p>';
+                    console.error('AI response structure unexpected:', result);
+                }
+            } catch (error) {
+                aiOutputDiv.innerHTML = '<p class="text-red-500">Error: Failed to fetch AI insights. Check your connection or try again later.</p>';
+                console.error('Error fetching AI insights:', error);
+            } finally {
+                aiButton.disabled = false;
+                aiButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function setupAITreatments() {
+            const aiButton = document.getElementById('get-ai-insights-btn');
+            if (aiButton) {
+                aiButton.addEventListener('click', getLatestAITreatments);
+            }
         }
     </script>
 </body>
